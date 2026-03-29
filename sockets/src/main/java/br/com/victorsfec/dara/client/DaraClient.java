@@ -16,19 +16,23 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Cliente responsável por gerenciar a conexão TCP (Socket) e atualizar a UI.
+ */
 public class DaraClient {
     private Socket socket;
     private PrintWriter out;
     private BufferedReader in;
     private final GameFrame gameFrame;
     private String lastGameStats;
+    
+    // 'volatile' assegura visibilidade correta entre as Threads da Interface Gráfica e de Rede
     private volatile boolean gameIsOver = false;
+    private volatile boolean isTryingToReconnect = false;
 
     private String playerName;
     private String serverAddress;
     private int serverPort;
-    private volatile boolean isTryingToReconnect = false;
-    
     private final String logFileName;
 
     public DaraClient() {
@@ -41,17 +45,11 @@ public class DaraClient {
             System.err.println("Não foi possível determinar o caminho de execução. O log será salvo no diretório padrão.");
         }
 
-        // Verifica se a pasta 'logs' existe, senão cria
         File logFolder = new File(executionPath + "logs");
-        if (!logFolder.exists()) {
-            logFolder.mkdirs();
-        }
+        if (!logFolder.exists()) logFolder.mkdirs();
 
-        // Monta o nome do arquivo dentro da pasta 'logs'
         String fileTimestamp = new SimpleDateFormat("dd_MM_yyyy").format(new Date());
-        // Usamos logFolder.getAbsolutePath() para garantir o caminho correto em qualquer SO
         this.logFileName = logFolder.getAbsolutePath() + File.separator + "dara_client_log_" + fileTimestamp + ".txt";
-        // ------------------------------------------
 
         gameFrame = new GameFrame(this);
 
@@ -60,15 +58,11 @@ public class DaraClient {
         JTextField portField = new JTextField("12345");
 
         JPanel panel = new JPanel(new GridLayout(0, 1));
-        panel.add(new JLabel("Seu Nome:"));
-        panel.add(nameField);
-        panel.add(new JLabel("Endereço IP do Servidor:"));
-        panel.add(ipField);
-        panel.add(new JLabel("Porta do Servidor:"));
-        panel.add(portField);
+        panel.add(new JLabel("Seu Nome:")); panel.add(nameField);
+        panel.add(new JLabel("Endereço IP do Servidor:")); panel.add(ipField);
+        panel.add(new JLabel("Porta do Servidor:")); panel.add(portField);
 
-        int result = JOptionPane.showConfirmDialog(null, panel, "Conectar ao Jogo Dara",
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        int result = JOptionPane.showConfirmDialog(null, panel, "Conectar ao Jogo Dara", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
         if (result == JOptionPane.OK_OPTION) {
             this.playerName = nameField.getText();
@@ -83,9 +77,7 @@ public class DaraClient {
 
             try {
                 this.serverPort = Integer.parseInt(portStr);
-                if (this.serverPort <= 0 || this.serverPort > 65535) {
-                    throw new NumberFormatException();
-                }
+                if (this.serverPort <= 0 || this.serverPort > 65535) throw new NumberFormatException();
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(null, "A porta deve ser um número válido entre 1 e 65535.", "Erro de Porta", JOptionPane.ERROR_MESSAGE);
                 System.exit(0);
@@ -102,32 +94,29 @@ public class DaraClient {
 
     private void logToFileAndConsole(String message) {
         System.out.println(message);
-        
         String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
         String logEntry = "[" + timestamp + "] " + message;
 
         try (FileWriter fw = new FileWriter(this.logFileName, true);
              BufferedWriter bw = new BufferedWriter(fw);
              PrintWriter pw = new PrintWriter(bw)) {
-             
             pw.println(logEntry);
-            
         } catch (IOException e) {
             System.err.println("Falha ao escrever no arquivo de log: " + e.getMessage());
         }
     }
 
+    // Tenta restabelecer a conexão de forma resiliente
     private void attemptReconnection() {
         if (isTryingToReconnect) return;
         isTryingToReconnect = true;
+        
         new Thread(() -> {
             while (!Thread.currentThread().isInterrupted() && isTryingToReconnect) {
                 try {
                     SwingUtilities.invokeLater(() -> gameFrame.updateStatus("Conexão perdida. Tentando reconectar..."));
                     shutdown();
-
                     Thread.sleep(5000);
-
                     connect(playerName, serverAddress, serverPort);
 
                     SwingUtilities.invokeLater(() -> gameFrame.updateStatus("Reconectado! Aguardando oponente..."));
@@ -140,6 +129,7 @@ public class DaraClient {
         }).start();
     }
 
+    // Thread para processar eventos recebidos do servidor
     private class ServerListener implements Runnable {
         @Override
         public void run() {
@@ -147,8 +137,9 @@ public class DaraClient {
                 String serverMessage;
                 while ((serverMessage = in.readLine()) != null) {
                     logToFileAndConsole("CLIENT (" + gameFrame.getPlayerName() + "): Mensagem recebida: " + serverMessage);
-                    
                     final String messageForUI = serverMessage;
+                    
+                    // Joga o processamento das mensagens para a UI Thread (Event Dispatch Thread)
                     SwingUtilities.invokeLater(() -> processServerMessage(messageForUI));
                 }
             } catch (IOException e) {
@@ -170,24 +161,18 @@ public class DaraClient {
                 case Protocol.PIECE_PLACED:
                     String[] placeCoords = data.split(Protocol.SEPARATOR);
                     if (placeCoords.length >= 3) {
-                        int r = Integer.parseInt(placeCoords[0]);
-                        int c = Integer.parseInt(placeCoords[1]);
-                        int pId = Integer.parseInt(placeCoords[2]);
-                        gameFrame.updateBoardPlacement(r, c, pId);
+                        gameFrame.updateBoardPlacement(Integer.parseInt(placeCoords[0]), Integer.parseInt(placeCoords[1]), Integer.parseInt(placeCoords[2]));
                     }
                     break;
-
                 case Protocol.MUST_REMOVE:
                     gameFrame.setMustCapture(true);
                     break;
-
                 case Protocol.PIECE_REMOVED:
                     String[] removeCoords = data.split(Protocol.SEPARATOR);
                     if (removeCoords.length >= 2) {
                         gameFrame.updateBoardRemoval(Integer.parseInt(removeCoords[0]), Integer.parseInt(removeCoords[1]));
                     }
                     break;
-
                 case Protocol.UPDATE_SCORE:
                     String[] scores = data.split(Protocol.SEPARATOR);
                     if (scores.length >= 2) {
@@ -204,8 +189,7 @@ public class DaraClient {
                 case Protocol.VALID_MOVES_LIST:
                     List<Point> moves = new ArrayList<>();
                     if (!data.isEmpty()) {
-                        String[] movePairs = data.split(";");
-                        for (String pair : movePairs) {
+                        for (String pair : data.split(";")) {
                             String[] moveCoords = pair.split(",");
                             moves.add(new Point(Integer.parseInt(moveCoords[0]), Integer.parseInt(moveCoords[1])));
                         }
@@ -216,8 +200,7 @@ public class DaraClient {
                     handleGameEnd("Parabéns, você ganhou!", "Fim de jogo", JOptionPane.INFORMATION_MESSAGE);
                     break;
                 case Protocol.DEFEAT:
-                    String defeatMessage = !data.isEmpty() ? data : "Você perdeu a partida.";
-                    handleGameEnd(defeatMessage, "Fim de jogo", JOptionPane.WARNING_MESSAGE);
+                    handleGameEnd(!data.isEmpty() ? data : "Você perdeu a partida.", "Fim de jogo", JOptionPane.WARNING_MESSAGE);
                     break;
                 case Protocol.OPPONENT_FORFEIT:
                     handleGameEnd("Seu oponente desistiu. Você ganhou!", "Vitória", JOptionPane.INFORMATION_MESSAGE);
@@ -229,9 +212,8 @@ public class DaraClient {
                     String[] welcomeParts = data.split(Protocol.SEPARATOR, 2);
                     gameFrame.setPlayerId(Integer.parseInt(welcomeParts[0]));
                     if (welcomeParts.length > 1) {
-                        String newPlayerName = welcomeParts[1];
-                        DaraClient.this.playerName = newPlayerName;
-                        gameFrame.setPlayerName(newPlayerName);
+                        DaraClient.this.playerName = welcomeParts[1];
+                        gameFrame.setPlayerName(welcomeParts[1]);
                     }
                     break;
                 case Protocol.OPPONENT_FOUND:
@@ -245,9 +227,7 @@ public class DaraClient {
                 case Protocol.ERROR:
                     JOptionPane.showMessageDialog(gameFrame, data, "Erro", JOptionPane.ERROR_MESSAGE);
                     if (data.contains("O servidor foi encerrado pelo administrador")) {
-                        gameIsOver = true; 
-                        shutdown(); 
-                        System.exit(0); 
+                        gameIsOver = true; shutdown(); System.exit(0); 
                     }
                     break;
                 case Protocol.INFO:
@@ -273,11 +253,7 @@ public class DaraClient {
     }
 
     public void shutdown() {
-        try {
-            if (socket != null && !socket.isClosed()) socket.close();
-        } catch (IOException e) {
-            logToFileAndConsole("CLIENT: Erro durante fechamento do socket: " + e.getMessage());
-        }
+        try { if (socket != null && !socket.isClosed()) socket.close(); } catch (IOException e) { logToFileAndConsole("CLIENT: Erro: " + e.getMessage()); }
     }
 
     public void connect(String playerName, String serverAddress, int port) {
@@ -286,15 +262,10 @@ public class DaraClient {
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-            String clientIp = socket.getLocalAddress().getHostAddress();
-            int clientPort = socket.getLocalPort();
-            String srvIp = socket.getInetAddress().getHostAddress();
-            int srvPort = socket.getPort();
-
             logToFileAndConsole("=========================================");
             logToFileAndConsole("Nova Conexão Estabelecida!");
-            logToFileAndConsole("Local (Cliente) -> IP: " + clientIp + " | Porta: " + clientPort);
-            logToFileAndConsole("Remoto (Servidor)-> IP: " + srvIp + " | Porta: " + srvPort);
+            logToFileAndConsole("Local (Cliente) -> IP: " + socket.getLocalAddress().getHostAddress() + " | Porta: " + socket.getLocalPort());
+            logToFileAndConsole("Remoto (Servidor)-> IP: " + socket.getInetAddress().getHostAddress() + " | Porta: " + socket.getPort());
             logToFileAndConsole("=========================================");
 
             out.println(Protocol.SET_NAME + Protocol.SEPARATOR + playerName);
@@ -307,29 +278,12 @@ public class DaraClient {
         }
     }
 
-    public void sendPlace(int row, int col) {
-        if (out != null) out.println(Protocol.PLACE + Protocol.SEPARATOR + row + Protocol.SEPARATOR + col);
-    }
-
-    public void sendRemove(int row, int col) {
-        if (out != null) out.println(Protocol.REMOVE + Protocol.SEPARATOR + row + Protocol.SEPARATOR + col);
-    }
-
-    public void sendMove(int startRow, int startCol, int endRow, int endCol) {
-        if (out != null) out.println(Protocol.MOVE + Protocol.SEPARATOR + startRow + Protocol.SEPARATOR + startCol + Protocol.SEPARATOR + endRow + Protocol.SEPARATOR + endCol);
-    }
-    
-    public void sendChatMessage(String message) {
-        if (out != null) out.println(Protocol.CHAT + Protocol.SEPARATOR + message);
-    }
-
-    public void sendForfeit() {
-        if (out != null) out.println(Protocol.FORFEIT);
-    }
-
-    public void sendGetValidMoves(int row, int col) {
-        if (out != null) out.println(Protocol.GET_VALID_MOVES + Protocol.SEPARATOR + row + Protocol.SEPARATOR + col);
-    }
+    public void sendPlace(int row, int col) { if (out != null) out.println(Protocol.PLACE + Protocol.SEPARATOR + row + Protocol.SEPARATOR + col); }
+    public void sendRemove(int row, int col) { if (out != null) out.println(Protocol.REMOVE + Protocol.SEPARATOR + row + Protocol.SEPARATOR + col); }
+    public void sendMove(int startRow, int startCol, int endRow, int endCol) { if (out != null) out.println(Protocol.MOVE + Protocol.SEPARATOR + startRow + Protocol.SEPARATOR + startCol + Protocol.SEPARATOR + endRow + Protocol.SEPARATOR + endCol); }
+    public void sendChatMessage(String message) { if (out != null) out.println(Protocol.CHAT + Protocol.SEPARATOR + message); }
+    public void sendForfeit() { if (out != null) out.println(Protocol.FORFEIT); }
+    public void sendGetValidMoves(int row, int col) { if (out != null) out.println(Protocol.GET_VALID_MOVES + Protocol.SEPARATOR + row + Protocol.SEPARATOR + col); }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(DaraClient::new);

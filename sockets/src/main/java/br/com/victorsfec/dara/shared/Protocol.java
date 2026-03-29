@@ -1,18 +1,23 @@
 package br.com.victorsfec.dara.shared;
 
+/**
+ * Dicionário de comunicação da aplicação.
+ * Centralizamos todas as "palavras-chave" aqui para evitar erros de digitação
+ * quando o Cliente e o Servidor precisarem trocar mensagens.
+ */
 public class Protocol {
     public static final String SEPARATOR = ":";
     
-    // Comandos Cliente -> Servidor
+    // --- CLIENTE -> SERVIDOR ---
     public static final String MOVE = "MOVE"; 
-    public static final String PLACE = "PLACE"; // Fase de Colocação
-    public static final String REMOVE = "REMOVE"; // Fase de Captura
+    public static final String PLACE = "PLACE"; 
+    public static final String REMOVE = "REMOVE"; 
     public static final String CHAT = "CHAT"; 
     public static final String FORFEIT = "FORFEIT"; 
     public static final String SET_NAME = "SET_NAME"; 
     public static final String GET_VALID_MOVES = "GET_VALID_MOVES"; 
 
-    // Comandos Servidor -> Cliente
+    // --- SERVIDOR -> CLIENTE ---
     public static final String GAME_OVER_STATS = "GAME_OVER_STATS"; 
     public static final String WELCOME = "WELCOME"; 
     public static final String GAME_START = "GAME_START";  

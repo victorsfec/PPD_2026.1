@@ -11,17 +11,20 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * O cérebro do lado do Servidor.
+ * Escuta a porta especificada e gera novas Threads (ClientHandler) para cada jogador que se conecta,
+ * além de criar as Salas de Jogo (GameSession) quando encontra pares.
+ */
 public class DaraServer {
+    // Listas globais. Como várias threads mexem nelas simultaneamente, usaremos 'synchronized' nos acessos.
     private static final List<ClientHandler> waitingClients = new ArrayList<>();
-    // NOVA LISTA: Mantém o registro de todos os clientes conectados (jogando ou não)
     private static final List<ClientHandler> activeClients = new ArrayList<>();
     
-    // Variáveis de controle do servidor
     private static ServerSocket serverSocket;
-    private static volatile boolean isRunning = false;
+    private static volatile boolean isRunning = false; // 'volatile' garante que a flag seja lida corretamente entre Threads
     private static Thread serverThread;
 
-    // Componentes da Interface Gráfica
     private static JFrame frame;
     private static JLabel statusLabel;
     private static JButton toggleButton;
@@ -61,9 +64,7 @@ public class DaraServer {
             if (portStr != null) {
                 try {
                     int port = Integer.parseInt(portStr.toString());
-                    if (port <= 0 || port > 65535) {
-                        throw new NumberFormatException();
-                    }
+                    if (port <= 0 || port > 65535) throw new NumberFormatException();
                     startServer(port);
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(frame, "Porta inválida. O servidor não será iniciado.", "Erro", JOptionPane.ERROR_MESSAGE);
@@ -72,6 +73,7 @@ public class DaraServer {
         }
     }
 
+    // Inicia o ServerSocket em uma thread paralela para não "congelar" a Interface Gráfica do servidor
     private static void startServer(int port) {
         try {
             serverSocket = new ServerSocket(port);
@@ -89,27 +91,17 @@ public class DaraServer {
         }
     }
 
-    // NOVO MÉTODO: Permite que um cliente seja removido das listas ao desconectar
+    // Método atômico para remover clientes das listas de forma segura
     public static void removeClient(ClientHandler client) {
-        synchronized (activeClients) {
-            activeClients.remove(client);
-        }
-        synchronized (waitingClients) {
-            waitingClients.remove(client);
-        }
+        synchronized (activeClients) { activeClients.remove(client); }
+        synchronized (waitingClients) { waitingClients.remove(client); }
     }
 
+    // Desliga a porta de escuta e notifica/derruba todos os clientes conectados
     private static void stopServer() {
         isRunning = false;
-        try {
-            if (serverSocket != null && !serverSocket.isClosed()) {
-                serverSocket.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        try { if (serverSocket != null && !serverSocket.isClosed()) serverSocket.close(); } catch (IOException e) { e.printStackTrace(); }
         
-        // NOVO: Derruba todos os jogadores que estão em partidas ativas
         synchronized (activeClients) {
             for (ClientHandler client : activeClients) {
                 client.sendMessage(Protocol.ERROR + Protocol.SEPARATOR + "O servidor foi encerrado pelo administrador. A partida foi interrompida.");
@@ -118,15 +110,14 @@ public class DaraServer {
             activeClients.clear();
         }
         
-        synchronized (waitingClients) {
-            waitingClients.clear();
-        }
+        synchronized (waitingClients) { waitingClients.clear(); }
 
         statusLabel.setText("Servidor parado.");
         toggleButton.setText("Iniciar Servidor");
         System.out.println("Dara Server parado.");
     }
 
+    // Loop infinito bloqueante (accept) que gera os representantes (ClientHandlers)
     private static void runServerLogic(int port) {
         try {
             while (isRunning) {
@@ -135,10 +126,7 @@ public class DaraServer {
 
                 ClientHandler clientHandler = new ClientHandler(clientSocket);
                 
-                // Registra o cliente na lista global assim que ele conecta
-                synchronized (activeClients) {
-                    activeClients.add(clientHandler);
-                }
+                synchronized (activeClients) { activeClients.add(clientHandler); }
 
                 try {
                     BufferedReader in = clientHandler.getInputStream();
@@ -149,9 +137,10 @@ public class DaraServer {
                         clientHandler.setPlayerName(playerName);
                         System.out.println("SERVER: Nome do jogador definido como: " + playerName);
 
+                        // Sistema de Matchmaking (Pareamento)
                         synchronized (waitingClients) {
                             waitingClients.add(clientHandler);
-                            clientHandler.start(); 
+                            clientHandler.start(); // Inicia a escuta daquele cliente
                             
                             if (waitingClients.size() >= 2) {
                                 ClientHandler player1 = waitingClients.remove(0);
@@ -163,7 +152,7 @@ public class DaraServer {
                             }
                         }
                     } else {
-                        System.err.println("Erro: Primeira mensagem do cliente não foi SET_NAME. Desconectando.");
+                        System.err.println("Erro: Primeira mensagem não foi SET_NAME. Desconectando.");
                         clientSocket.close();
                     }
                 } catch (IOException e) {
@@ -172,11 +161,8 @@ public class DaraServer {
                 }
             }
         } catch (SocketException e) {
-            if (isRunning) {
-                System.err.println("Erro no socket do servidor: " + e.getMessage());
-            }
+            if (isRunning) System.err.println("Erro no socket do servidor: " + e.getMessage());
         } catch (IOException e) {
-            System.err.println("Erro no servidor Dara: " + e.getMessage());
             e.printStackTrace();
         }
     }

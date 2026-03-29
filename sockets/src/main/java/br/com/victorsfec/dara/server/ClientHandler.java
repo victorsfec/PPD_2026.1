@@ -6,6 +6,10 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
+/**
+ * Thread individual dedicada a escutar um cliente específico.
+ * Permite que o servidor lide com múltiplos jogadores simultaneamente sem bloquear.
+ */
 public class ClientHandler extends Thread {
     private final Socket clientSocket;
     private PrintWriter out;  
@@ -13,9 +17,7 @@ public class ClientHandler extends Thread {
     private GameSession gameSession; 
     private String playerName = "Jogador Anônimo"; 
 
-    public ClientHandler(Socket socket) {
-        this.clientSocket = socket;
-    }
+    public ClientHandler(Socket socket) { this.clientSocket = socket; }
 
     public void setPlayerName(String name) { this.playerName = name; }
     public String getPlayerName() { return playerName; }
@@ -31,6 +33,7 @@ public class ClientHandler extends Thread {
         return out;
     }
 
+    // O laço de repetição da Thread. Fica lendo as mensagens e repassando para a Sessão
     @Override
     public void run() {
         try {
@@ -40,24 +43,14 @@ public class ClientHandler extends Thread {
             
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
-                if (gameSession != null) {
-                    gameSession.processMessage(inputLine, this);
-                }
+                if (gameSession != null) gameSession.processMessage(inputLine, this);
             }
         } catch (IOException e) {
+            // Queda brusca de rede
             System.out.println("Cliente desconectado: " + playerName + " (" + clientSocket.getInetAddress() + ")");
-            if (gameSession != null) {
-                gameSession.handleDisconnect(this);
-            }
+            if (gameSession != null) gameSession.handleDisconnect(this);
         } finally {
-            try {
-                if (clientSocket != null && !clientSocket.isClosed()) {
-                    clientSocket.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            // NOVO: Remove o cliente da lista global do servidor
+            try { if (clientSocket != null && !clientSocket.isClosed()) clientSocket.close(); } catch (IOException e) { e.printStackTrace(); }
             DaraServer.removeClient(this);
         }
     }
@@ -70,12 +63,6 @@ public class ClientHandler extends Thread {
     }
 
     public void shutdown() {
-        try {
-            if (clientSocket != null && !clientSocket.isClosed()) {
-                clientSocket.close();
-            }
-        } catch (IOException e) {
-            System.err.println("Erro durante o desligamento do cliente: " + e.getMessage());
-        }
+        try { if (clientSocket != null && !clientSocket.isClosed()) clientSocket.close(); } catch (IOException e) { }
     }
 }

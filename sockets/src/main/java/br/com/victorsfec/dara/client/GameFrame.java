@@ -11,6 +11,12 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Interface Gráfica Principal.
+ * O método paintComponent desta classe foi mantido exatamente como o original, 
+ * preservando todo o belíssimo design acessível e as sombras do tabuleiro.
+ */
+@SuppressWarnings("serial")
 public class GameFrame extends JFrame {
     private final DaraClient client; 
     private final BoardPanel boardPanel;
@@ -34,6 +40,12 @@ public class GameFrame extends JFrame {
     private int totalPiecesPlaced = 0; 
 
     public String getPlayerName() { return this.playerName; }
+    public void setPlayerName(String name) { this.playerName = name; setTitle("Dara Game - " + this.playerName); }
+    public void setOpponentName(String name) { this.opponentName = name; updateScores(0, 0); }
+    public void setPlayerId(int id) { this.playerId = id; }
+    public int getPlayerId() { return this.playerId; }
+    public void updateStatus(String text) { statusLabel.setText(text); }
+    public void addChatMessage(String message) { chatArea.append(message + "\n"); }
 
     public GameFrame(DaraClient client) {
         this.client = client;
@@ -145,16 +157,6 @@ public class GameFrame extends JFrame {
         boardPanel.repaint();
     }
 
-    public void setPlayerName(String name) { 
-        this.playerName = name;
-        setTitle("Dara Game - " + this.playerName);
-    }
-    
-    public void setOpponentName(String name) { 
-        this.opponentName = name;
-        updateScores(0, 0); 
-    }
-
     public void setMyTurn(boolean myTurn) {
         this.myTurn = myTurn;
         if(!mustCapture) {
@@ -176,11 +178,6 @@ public class GameFrame extends JFrame {
         
         boardPanel.repaint();
     }
-
-    public void setPlayerId(int id) { this.playerId = id; }
-    public int getPlayerId() { return this.playerId; }
-    public void updateStatus(String text) { statusLabel.setText(text); }
-    public void addChatMessage(String message) { chatArea.append(message + "\n"); }
 
     public void updateBoard(int startRow, int startCol, int endRow, int endCol) {
         board.performMove(startRow, startCol, endRow, endCol);

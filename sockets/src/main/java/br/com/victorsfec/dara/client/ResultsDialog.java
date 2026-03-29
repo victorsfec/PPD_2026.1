@@ -1,28 +1,27 @@
 package br.com.victorsfec.dara.client;
 
 import br.com.victorsfec.dara.shared.Protocol;
-
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Janela Modal (Dialog) que congela a tela e exibe as métricas consolidadas após o término da partida.
+ */
+@SuppressWarnings("serial")
 public class ResultsDialog extends JDialog {
 
     public ResultsDialog(Frame owner, String statsData) {
         super(owner, "Tela de resultados da partida", true);
 
+        // O pacote chega como uma String formatada via separador do protocolo. Quebramos para preencher a tela.
         String[] parts = statsData.split(Protocol.SEPARATOR, 6);
         String winnerInfo = parts[0];
         String p1Moves = parts[1];
         String p1Invalid = parts[2];
         String p2Moves = parts[3];
         String p2Invalid = parts[4];
-        String chatLog;
-
-        if (parts.length > 5 && !parts[5].isEmpty()) {
-            chatLog = parts[5].replace("|", "\n");
-        } else {
-            chatLog = "Sem histórico de conversas.";
-        }
+        
+        String chatLog = (parts.length > 5 && !parts[5].isEmpty()) ? parts[5].replace("|", "\n") : "Sem histórico de conversas.";
 
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
