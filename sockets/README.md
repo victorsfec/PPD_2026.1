@@ -13,6 +13,26 @@ Este projeto é uma implementação do jogo de tabuleiro africano **Dara**, dese
 
 ---
 
+## 🏗️ Qualidade de Código e Arquitetura (PPD)
+
+O projeto foi desenvolvido focando nas melhores práticas de engenharia de software e sistemas distribuídos:
+* **Thread-Safety e Sincronização:** Uso de blocos `synchronized` no Servidor (`GameSession`) para garantir a exclusão mútua e evitar Condições de Corrida (Race Conditions) quando múltiplos clientes enviam comandos simultaneamente.
+* **Clean Code:** Refatoração de métodos, uso de operadores ternários e simplificação de blocos lógicos para um código conciso e de fácil manutenção.
+* **Separação de Responsabilidades:** O `Board.java` atua como motor de regras isolado no backend, enquanto o `GameFrame.java` lida apenas com a renderização (`Graphics2D`) validada pelo servidor.
+* **Documentação Humanizada:** O código-fonte está amplamente comentado com foco nas decisões arquiteturais (o *porquê* de usar Threads, Sockets e filas), facilitando a leitura e a avaliação técnica.
+
+---
+
+## 🎩 Modo de Apresentação (Cheat Code)
+
+Para facilitar apresentações acadêmicas e testes rápidos sem a necessidade de jogar uma partida inteira (que pode levar muito tempo), foi implementado um comando secreto:
+
+* Digite **`/endgame`** no chat durante qualquer momento da partida e pressione Enviar.
+* **O que acontece:** O Servidor irá limpar o tabuleiro virtualmente e montar instantaneamente um cenário de **Xeque-Mate**. 
+* O Jogador 1 (quem digitou o comando) terá a vez e estará a apenas 1 movimento de formar uma trinca e capturar a peça letal do Jogador 2, encerrando o jogo em segundos e demonstrando todas as telas de vitória/derrota/estatísticas.
+
+---
+
 ## 📜 Regras do Jogo Implementadas
 
 O jogo ocorre em um tabuleiro de **5x6** e é dividido em duas fases:
@@ -25,10 +45,10 @@ O jogo ocorre em um tabuleiro de **5x6** e é dividido em duas fases:
 
 ## 🛠️ Tecnologias e Pré-requisitos
 
-* **Linguagem:** Java 17+
-* **Gerenciador de Dependências e Build:** Apache Maven 3.9.14
-* **Interface Gráfica:** Java Swing / AWT
-* **Comunicação:** Sockets TCP/IP puros e nativos do Java (java.net.Socket e java.net.ServerSocket)
+* **Linguagem:** Java 17+ (Compatível com JDK 21)
+* **Gerenciador de Dependências e Build:** Apache Maven 3.8+
+* **Interface Gráfica:** Java Swing / AWT (`Graphics2D`)
+* **Comunicação:** Sockets TCP/IP puros e nativos do Java (`java.net.Socket` e `java.net.ServerSocket`)
 
 ---
 
