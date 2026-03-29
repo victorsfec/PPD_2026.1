@@ -1,0 +1,14 @@
+# Ignora tudo na target, exceto os arquivos .jar
+target/*
+!target/*.jar
+
+# Ignora os arquivos de log, mas mantém a pasta (usando o truque do .gitkeep)
+logs/*
+!logs/.gitkeep
+
+# Ignora arquivos de configuração da IDE
+.vscode/
+.settings/
+.classpath
+.project
+bin/
