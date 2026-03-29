@@ -1,0 +1,23 @@
+[2026-03-29 20:27:30] =========================================
+[2026-03-29 20:27:30] Nova Conexão Estabelecida!
+[2026-03-29 20:27:30] Local (Cliente) -> IP: 127.0.0.1 | Porta: 62269
+[2026-03-29 20:27:30] Remoto (Servidor)-> IP: 127.0.0.1 | Porta: 12345
+[2026-03-29 20:27:30] =========================================
+[2026-03-29 20:27:30] CLIENT (Jogador): Mensagem recebida: INFO:Aguardando oponente...
+[2026-03-29 20:27:35] =========================================
+[2026-03-29 20:27:35] Nova Conexão Estabelecida!
+[2026-03-29 20:27:35] Local (Cliente) -> IP: 127.0.0.1 | Porta: 62273
+[2026-03-29 20:27:35] Remoto (Servidor)-> IP: 127.0.0.1 | Porta: 12345
+[2026-03-29 20:27:35] =========================================
+[2026-03-29 20:27:35] CLIENT (Jogador): Mensagem recebida: WELCOME:1:Jogador (1)
+[2026-03-29 20:27:35] CLIENT (Jogador): Mensagem recebida: WELCOME:2:Jogador (2)
+[2026-03-29 20:27:35] CLIENT (Jogador): Mensagem recebida: OPPONENT_FOUND:Jogador (1)
+[2026-03-29 20:27:35] CLIENT (Jogador (1)): Mensagem recebida: OPPONENT_FOUND:Jogador (2)
+[2026-03-29 20:27:35] CLIENT (Jogador): Mensagem recebida: GAME_START
+[2026-03-29 20:27:35] CLIENT (Jogador (1)): Mensagem recebida: GAME_START
+[2026-03-29 20:27:35] CLIENT (Jogador): Mensagem recebida: SET_TURN:OPPONENT_TURN
+[2026-03-29 20:27:35] CLIENT (Jogador (1)): Mensagem recebida: SET_TURN:YOUR_TURN
+[2026-03-29 20:27:41] CLIENT (Jogador (1)): Mensagem recebida: GAME_OVER_STATS:Jogador (1) ganhou pela desistência do oponente.:0:0:0:0:
+[2026-03-29 20:27:41] CLIENT (Jogador (2)): Mensagem recebida: GAME_OVER_STATS:Jogador (1) ganhou pela desistência do oponente.:0:0:0:0:
+[2026-03-29 20:27:41] CLIENT (Jogador (1)): Mensagem recebida: OPPONENT_FORFEIT
+[2026-03-29 20:27:41] CLIENT (Jogador (2)): Mensagem recebida: DEFEAT:Você desistiu.
