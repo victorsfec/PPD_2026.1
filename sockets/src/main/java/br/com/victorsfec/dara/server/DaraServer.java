@@ -12,9 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * O cérebro do lado do Servidor.
- * Escuta a porta especificada e gera novas Threads (ClientHandler) para cada jogador que se conecta,
- * além de criar as Salas de Jogo (GameSession) quando encontra pares.
+ * A parte central no lado do Servidor.
+ * Escuta a porta especificada e gera novas Threads, ClientHandler, para cada jogador que se conecta,
+ * além de criar as Salas de Jogo, GameSession, quando encontra pares.
  */
 public class DaraServer {
     // Listas globais. Como várias threads mexem nelas simultaneamente, usaremos 'synchronized' nos acessos.
@@ -73,7 +73,7 @@ public class DaraServer {
         }
     }
 
-    // Inicia o ServerSocket em uma thread paralela para não "congelar" a Interface Gráfica do servidor
+    // Inicia o ServerSocket em uma thread paralela para não congelar a Interface Gráfica do servidor
     private static void startServer(int port) {
         try {
             serverSocket = new ServerSocket(port);
@@ -117,7 +117,7 @@ public class DaraServer {
         System.out.println("Dara Server parado.");
     }
 
-    // Loop infinito bloqueante (accept) que gera os representantes (ClientHandlers)
+    // Loop infinito bloqueante que gera os representantes (ClientHandlers)
     private static void runServerLogic(int port) {
         try {
             while (isRunning) {

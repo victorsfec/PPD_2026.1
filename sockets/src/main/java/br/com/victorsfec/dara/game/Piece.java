@@ -1,7 +1,7 @@
 package br.com.victorsfec.dara.game;
 
 /**
- * POJO que representa uma peça isolada do Tabuleiro.
+ * Classe básica pra representar uma peça. Só guarda de quem ela é.
  */
 public class Piece {
     private final int playerId;

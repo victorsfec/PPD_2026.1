@@ -2,7 +2,7 @@ package br.com.victorsfec.dara.shared;
 
 /**
  * Dicionário de comunicação da aplicação.
- * Centralizamos todas as "palavras-chave" aqui para evitar erros de digitação
+ * Coloquei todas as "palavras-chave" aqui para evitar erros de digitação
  * quando o Cliente e o Servidor precisarem trocar mensagens.
  */
 public class Protocol {

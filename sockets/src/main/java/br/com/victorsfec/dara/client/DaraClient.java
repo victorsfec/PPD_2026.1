@@ -36,7 +36,7 @@ public class DaraClient {
     private final String logFileName;
 
     public DaraClient() {
-        // --- ADAPTAÇÃO PARA CRIAÇÃO DA PASTA LOG ---
+        // --- Responsável também pela criação da pasta LOG ---
         String executionPath = "";
         try {
             executionPath = new File(DaraClient.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();

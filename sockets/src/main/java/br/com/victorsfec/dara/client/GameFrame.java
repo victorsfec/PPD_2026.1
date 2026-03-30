@@ -12,9 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Interface Gráfica Principal.
- * O método paintComponent desta classe foi mantido exatamente como o original, 
- * preservando todo o belíssimo design acessível e as sombras do tabuleiro.
+ * Interface Gráfica Principal
  */
 @SuppressWarnings("serial")
 public class GameFrame extends JFrame {
@@ -341,7 +339,7 @@ public class GameFrame extends JFrame {
                         }
 
                         if (isPlayer1) {
-                            // --- JOGADOR 1: BOLINHA LARANJA (#D55E00) ---
+                            // --- JOGADOR 1: BOLINHA LARANJA ---
                             Point2D baseCenter = new Point2D.Float(cx, cy);
                             float[] distBaseW = {0.0f, 0.7f, 1.0f};
                             Color[] colorsBaseW = {new Color(240, 150, 70), new Color(213, 94, 0), new Color(140, 50, 0)};
@@ -362,7 +360,7 @@ public class GameFrame extends JFrame {
                             g2d.drawOval(cx - pieceRadius, cy - pieceRadius, pieceDiameter, pieceDiameter);
 
                         } else {
-                            // --- JOGADOR 2: QUADRADO AZUL ESCURO (#0072B2) ---
+                            // --- JOGADOR 2: QUADRADO AZUL ESCURO ---
                             Point2D startL = new Point2D.Float(cx - squareOffset, cy - squareOffset);
                             Point2D endL = new Point2D.Float(cx + squareOffset, cy + squareOffset);
                             float[] distBaseB = {0.0f, 0.5f, 1.0f};
@@ -383,7 +381,7 @@ public class GameFrame extends JFrame {
                 }
             }
 
-            // 6. Destacando a peça selecionada (Amarelo Acessível - #F0E442)
+            // 6. Destacando a peça selecionada
             if (selectedRow != -1 && selectedCol != -1) {
                 int cx = MARGIN + selectedCol * cellWidth + (cellWidth / 2);
                 int cy = MARGIN + selectedRow * cellHeight + (cellHeight / 2);
@@ -395,7 +393,7 @@ public class GameFrame extends JFrame {
                 if (selectedPiece != null && selectedPiece.getPlayerId() == 2) {
                     g2d.drawRect(cx - squareOffset - 4, cy - squareOffset - 4, squareSize + 8, squareSize + 8);
                     
-                    // Bordas pretas finas (Duplo Contorno para máximo contraste em qualquer fundo)
+                    // Bordas pretas finas 
                     g2d.setColor(Color.BLACK);
                     g2d.setStroke(new BasicStroke(1));
                     g2d.drawRect(cx - squareOffset - 6, cy - squareOffset - 6, squareSize + 12, squareSize + 12);
@@ -410,7 +408,7 @@ public class GameFrame extends JFrame {
                 }
             }
 
-            // 7. Destacando os movimentos válidos (Acessível: Cor + Forma Tracejada + Ponto Central)
+            // 7. Destacando os movimentos válidos
             for (Point move : validMoves) {
                 int moveRow = move.x;
                 int moveCol = move.y;
@@ -420,12 +418,12 @@ public class GameFrame extends JFrame {
                 // Cor Azul Celeste (Okabe-Ito)
                 g2d.setColor(new Color(86, 180, 233));
                 
-                // Forma 1: Linha Tracejada (indicando espaço reservado/alvo de clique)
+                // 1: Linha Tracejada 
                 Stroke dashed = new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10, 10}, 0);
                 g2d.setStroke(dashed);
                 g2d.drawOval(cx - pieceRadius, cy - pieceRadius, pieceDiameter, pieceDiameter);
                 
-                // Forma 2: Ponto central sólido para reforçar a indicação de destino independente da cor
+                // 2: Ponto central sólido para reforçar a indicação de destino independente da cor
                 g2d.fillOval(cx - 6, cy - 6, 12, 12);
             }
         }

@@ -5,7 +5,7 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * Janela Modal (Dialog) que congela a tela e exibe as métricas consolidadas após o término da partida.
+ * Janela Modal que congela a tela e exibe as métricas consolidadas após o término da partida.
  */
 @SuppressWarnings("serial")
 public class ResultsDialog extends JDialog {
@@ -13,7 +13,7 @@ public class ResultsDialog extends JDialog {
     public ResultsDialog(Frame owner, String statsData) {
         super(owner, "Tela de resultados da partida", true);
 
-        // O pacote chega como uma String formatada via separador do protocolo. Quebramos para preencher a tela.
+        // O pacote chega como uma String formatada via separador do protocolo, é quebrado para preencher a tela.
         String[] parts = statsData.split(Protocol.SEPARATOR, 6);
         String winnerInfo = parts[0];
         String p1Moves = parts[1];

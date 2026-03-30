@@ -6,7 +6,7 @@ import java.util.List;
 
 /**
  * Matriz Lógica e Máquina de Regras.
- * Controla os alinhamentos e impede as formações ilegais do Dara.
+ * Serve para Controlar os alinhamentos e impede as formações ilegais do Dara.
  */
 public class Board {
     public static final int ROWS = 5;
