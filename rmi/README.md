@@ -71,20 +71,37 @@ O jogo ocorre em um tabuleiro de **5x6** e é dividido em duas fases:
 
 ## 🚀 Como Compilar
 
-O projeto utiliza o `maven-shade-plugin` para gerar os executáveis `.jar` independentes.
+O projeto utiliza o `maven-shade-plugin` para gerar os executáveis `.jar` independentes.  
 Abra o terminal na pasta raiz do projeto (`rmi/`) e execute:
 
 ```bash
 mvn clean package
+```
+----------------------------------
+### 1. Executando na mesma máquina
 
-1. Para mesma máquina utilizar os seguintes comandos:
-   ```bash
- - Server: java -jar target/rmi-1.0-server.jar
- - Client: java -jar target/rmi-1.0-client.jar
-   
-2. Para máquinas distintas dentro da mesma rede ou VM:
-   ```bash
- - Server: java "-Djava.rmi.server.hostname=IP_DO_SERVER" -jar target/rmi-1.0-server.jar
- - Client: java "-Djava.rmi.server.hostname=IP_DA_MAQUINA_DO_CLIENTE" -jar target/rmi-1.0-client.jar
+#### Servidor
+```bash
+java -jar target/rmi-1.0-server.jar
+```
 
-Obs*: Além de rodar o comando no terminal, o usuário do Client deve lembrar-se de apagar o localhost e digitar o IP do Servidor na tela de login da interface gráfica para estabelecer a conexão inicial.
+#### Cliente
+```bash
+java -jar target/rmi-1.0-client.jar
+```
+
+-----------------------------------
+### 2. Executando em máquinas diferentes (mesma rede ou VM)
+
+#### Servidor
+```bash
+java "-Djava.rmi.server.hostname=IP_DO_SERVER" -jar target/rmi-1.0-server.jar
+```
+
+#### Cliente
+```bash
+java "-Djava.rmi.server.hostname=IP_DA_MAQUINA_DO_CLIENTE" -jar target/rmi-1.0-client.jar
+```
+
+> **Observação:**  
+> Além de executar o comando no terminal, o usuário do Cliente deve apagar o `localhost` e informar o IP do servidor na tela de login da interface gráfica para estabelecer a conexão inicial.
