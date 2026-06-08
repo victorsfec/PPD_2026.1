@@ -1,0 +1,15 @@
+# Ignora tudo na target, exceto os arquivos .jar
+target/*
+!target/*.jar
+
+# Ignora arquivos de configuração da IDE
+.vscode/
+.settings/
+.classpath
+.project
+bin/
+
+# Ignora banco de dados e arquivos temporários do ActiveMQ
+kahadb/
+activemq-data/
+lib/
